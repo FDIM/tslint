@@ -49,7 +49,7 @@ function walk(this: Rule, ctx: any) {
     const whitelist = this.getOptions().ruleArguments || [];
 
     for (const name of findImports(ctx.sourceFile, ImportKind.All)) {
-        if (name.text.indexOf(Rule.PARENT_DIR) !== -1 && !whitelist.some((allowedName) => name.text.indexOf(allowedName) === -1)) {
+        if (name.text.indexOf(Rule.PARENT_DIR) !== -1 && !whitelist.some((allowedName) => name.text.indexOf(allowedName) !== -1)) {
             ctx.addFailure(name.getStart(ctx.sourceFile) + 1, name.end - 1, Rule.FAILURE_STRING);
         }
     }
