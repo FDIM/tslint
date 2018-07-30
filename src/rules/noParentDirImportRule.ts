@@ -15,41 +15,41 @@
  * limitations under the License.
  */
 
-import { findImports, ImportKind } from "tsutils";
+import { findImports, ImportKind } from 'tsutils';
 
-import * as ts from "typescript";
-
-import * as Lint from "../index";
+import * as Lint from 'tslint';
 
 export class Rule extends Lint.Rules.AbstractRule {
     /* tslint:disable:object-literal-sort-keys */
-    public static metadata: Lint.IRuleMetadata = {
-        ruleName: "no-parent-dir-import",
-        description: "Disallows imports from parent directory",
+    static metadata = {
+        ruleName: 'no-parent-dir-import',
+        description: 'Disallows imports from parent directory',
         rationale: Lint.Utils.dedent`
             enforces relative path usage either from baseUrl or specialized paths (e.g. @common/)
         `,
-        optionsDescription: "Not configurable.",
+        optionsDescription: 'Not configurable.',
         options: null,
-        optionExamples: [true],
-        type: "functionality",
+        optionExamples: [true, 'allowed-file-name'] as any,
+        type: 'functionality' as any,
         typescriptOnly: false,
         hasFix: false,
     };
     /* tslint:enable:object-literal-sort-keys */
 
-    public static FAILURE_STRING = "Import from parent directory";
+    static FAILURE_STRING = 'Import from parent directory';
 
-    public static PARENT_DIR = "../";
+    static PARENT_DIR = '../';
 
-    public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
-        return this.applyWithFunction(sourceFile, walk);
+    apply(sourceFile: any) {
+        return this.applyWithFunction(sourceFile, walk.bind(this));
     }
 }
 
-function walk(ctx: Lint.WalkContext<void>) {
+function walk(this: Rule, ctx: any) {
+    const whitelist = this.getOptions().ruleArguments || [];
+
     for (const name of findImports(ctx.sourceFile, ImportKind.All)) {
-        if (name.text.indexOf(Rule.PARENT_DIR) !== -1) {
+        if (name.text.indexOf(Rule.PARENT_DIR) !== -1 && !whitelist.some((allowedName) => name.text.indexOf(allowedName) === -1)) {
             ctx.addFailure(name.getStart(ctx.sourceFile) + 1, name.end - 1, Rule.FAILURE_STRING);
         }
     }
